@@ -280,10 +280,6 @@ For production deployment, consider:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-MIT
-
 ## Links
 
 - [Demo Application](https://unlayer-svelte.netlify.app) - Live demo on Netlify
