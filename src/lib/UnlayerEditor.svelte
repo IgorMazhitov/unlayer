@@ -59,7 +59,13 @@
 
       const existingScript = document.querySelector(`script[src="${SCRIPT_URL}"]`);
       if (existingScript) {
+        if (existingScript.hasAttribute('data-loaded')) {
+          scriptLoaded = true;
+          resolve();
+          return;
+        }
         existingScript.addEventListener('load', () => {
+          existingScript.setAttribute('data-loaded', 'true');
           scriptLoaded = true;
           resolve();
         });
@@ -70,7 +76,9 @@
       const script = document.createElement('script');
       script.src = SCRIPT_URL;
       script.async = true;
+      script.defer = true;
       script.onload = () => {
+        script.setAttribute('data-loaded', 'true');
         scriptLoaded = true;
         resolve();
       };
@@ -112,22 +120,28 @@
     try {
       const finalOptions = mergeOptions();
       
-      window.unlayer.init({
-        id: EDITOR_ID,
-        ...finalOptions
+      // Use requestAnimationFrame for smoother initialization
+      requestAnimationFrame(() => {
+        window.unlayer.init({
+          id: EDITOR_ID,
+          ...finalOptions
+        });
+
+        editor = window.unlayer;
+        
+        setupEventListeners();
+        
+        if (design) {
+          // Delay design loading slightly for better performance
+          setTimeout(() => {
+            editor?.loadDesign(design);
+          }, 100);
+        }
+
+        editorLoaded = true;
+        dispatch('loaded');
+        onloaded?.();
       });
-
-      editor = window.unlayer;
-      
-      setupEventListeners();
-      
-      if (design) {
-        editor.loadDesign(design);
-      }
-
-      editorLoaded = true;
-      dispatch('loaded');
-      onloaded?.();
     } catch (error) {
       loadError = error as Error;
       dispatch('error', error as Error);
@@ -218,8 +232,12 @@
 
   onMount(async () => {
     try {
+      // Start loading immediately
       await loadScript();
-      initializeEditor();
+      // Small delay to ensure DOM is ready
+      requestAnimationFrame(() => {
+        initializeEditor();
+      });
     } catch (error) {
       console.error('Failed to mount Unlayer editor:', error);
       dispatch('error', error as Error);
