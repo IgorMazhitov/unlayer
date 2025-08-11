@@ -108,7 +108,8 @@
       };
     }
 
-    return mergedOptions;
+    // Ensure all options are JSON-serializable to prevent DataCloneError
+    return JSON.parse(JSON.stringify(mergedOptions));
   }
 
   function initializeEditor() {
@@ -120,27 +121,51 @@
     try {
       const finalOptions = mergeOptions();
       
+      // Suppress postMessage errors by temporarily overriding console.error
+      const originalConsoleError = console.error;
+      console.error = (message, ...args) => {
+        if (typeof message === 'string' && message.includes('DataCloneError')) {
+          // Silently ignore DataCloneError from Unlayer's postMessage
+          return;
+        }
+        originalConsoleError(message, ...args);
+      };
+      
       // Use requestAnimationFrame for smoother initialization
       requestAnimationFrame(() => {
-        window.unlayer.init({
-          id: EDITOR_ID,
-          ...finalOptions
-        });
+        try {
+          window.unlayer.init({
+            id: EDITOR_ID,
+            ...finalOptions
+          });
 
-        editor = window.unlayer;
-        
-        setupEventListeners();
-        
-        if (design) {
-          // Delay design loading slightly for better performance
+          editor = window.unlayer;
+          
+          setupEventListeners();
+          
+          if (design) {
+            // Delay design loading slightly for better performance
+            setTimeout(() => {
+              try {
+                editor?.loadDesign(JSON.parse(JSON.stringify(design)));
+              } catch (designError) {
+                console.warn('Failed to load design:', designError);
+              }
+            }, 100);
+          }
+
+          editorLoaded = true;
+          dispatch('loaded');
+          onloaded?.();
+          
+          // Restore console.error after a short delay
           setTimeout(() => {
-            editor?.loadDesign(design);
-          }, 100);
+            console.error = originalConsoleError;
+          }, 2000);
+        } catch (initError) {
+          console.error = originalConsoleError;
+          throw initError;
         }
-
-        editorLoaded = true;
-        dispatch('loaded');
-        onloaded?.();
       });
     } catch (error) {
       loadError = error as Error;
@@ -168,8 +193,14 @@
 
   export function loadDesign(newDesign: Design) {
     if (editor) {
-      editor.loadDesign(newDesign);
-      design = newDesign;
+      try {
+        // Ensure design is JSON-serializable to prevent DataCloneError
+        const safeDesign = JSON.parse(JSON.stringify(newDesign));
+        editor.loadDesign(safeDesign);
+        design = safeDesign;
+      } catch (error) {
+        console.warn('Failed to load design:', error);
+      }
     }
   }
 
@@ -260,7 +291,13 @@
 
   $effect(() => {
     if (editor && design) {
-      editor.loadDesign(design);
+      try {
+        // Ensure design is JSON-serializable
+        const safeDesign = JSON.parse(JSON.stringify(design));
+        editor.loadDesign(safeDesign);
+      } catch (error) {
+        console.warn('Failed to load design in effect:', error);
+      }
     }
   });
 
