@@ -16,8 +16,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/unlayer-svelte"
+    "url": "https://github.com/IgorMazhitov/unlayer.git"
   },
+  "bugs": {
+    "url": "https://github.com/IgorMazhitov/unlayer/issues"
+  },
+  "homepage": "https://github.com/IgorMazhitov/unlayer#readme",
   "files": [
     "dist",
     "README.md"

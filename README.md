@@ -286,14 +286,14 @@ MIT
 
 ## Links
 
-- [Demo Application](#) - Live demo (deploy to Vercel/Netlify)
+- [Demo Application](https://unlayer-svelte.netlify.app) - Live demo on Netlify
 - [NPM Package](https://www.npmjs.com/package/@unlayer/svelte-email-editor)
 - [Unlayer Documentation](https://docs.unlayer.com/)
-- [GitHub Repository](https://github.com/yourusername/unlayer-svelte)
+- [GitHub Repository](https://github.com/IgorMazhitov/unlayer)
 
 ## Support
 
 For issues and questions:
-- Create an issue on [GitHub](https://github.com/yourusername/unlayer-svelte/issues)
+- Create an issue on [GitHub](https://github.com/IgorMazhitov/unlayer/issues)
 - Check [Unlayer's official docs](https://docs.unlayer.com/)
-- Contact: your-email@example.com
+- Contact: ivo@unlayer.com & hariss@unlayer.com
